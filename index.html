@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#0F8A5F">
+<title>BeCompany</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Layout: phone-first app. One column, a big number on top, a bottom tab bar, cards with generous padding. Modeled on the clarity of Copilot Money and the hero-number screens of Robinhood. */
+:root{
+  --bg:#F4F5F7; --card:#FFFFFF; --ink:#0F1419; --ink2:#4B5563; --ink3:#8A94A3; --line:#E6E8EC; --line2:#CBD0D8;
+  --accent:#0F8A5F; --accent-soft:#E3F5EC; --accent-ink:#FFFFFF;
+  --good:#0F8A5F; --good-soft:#E3F5EC; --bad:#D83A3A; --bad-soft:#FBE7E7; --warn:#B7791F; --warn-soft:#FBF1DD;
+  --chip:#EDEFF2; --chip-on:#0F1419; --chip-on-ink:#FFFFFF; --input:#FFFFFF;
+  --c-food:#F28C38; --c-coffee:#9A6B3F; --c-transit:#3B82F6; --c-shopping:#E0529A; --c-fun:#8B5CF6; --c-health:#14B8A6; --c-subs:#6366F1; --c-rent:#64748B; --c-utilities:#F59E0B; --c-capex:#334155; --c-invest:#0F8A5F; --c-repay:#DC2626; --c-borrow:#78716C; --c-income:#0F8A5F; --c-transfer:#94A3B8;
+  --shadow:0 1px 2px rgba(15,20,25,.04),0 8px 24px rgba(15,20,25,.06);
+  --ui:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --serif:'Instrument Serif',Georgia,'Times New Roman',serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1114; --card:#171B20; --ink:#F2F4F6; --ink2:#B4BCC7; --ink3:#7C8794; --line:#262C34; --line2:#363E48;
+    --accent:#34C38F; --accent-soft:#163227; --accent-ink:#0B1A13;
+    --good:#34C38F; --good-soft:#163227; --bad:#F26D6D; --bad-soft:#3A1E1E; --warn:#E3B04B; --warn-soft:#3A2F17;
+    --chip:#232930; --chip-on:#F2F4F6; --chip-on-ink:#0E1114; --input:#1D2227;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1114; --card:#171B20; --ink:#F2F4F6; --ink2:#B4BCC7; --ink3:#7C8794; --line:#262C34; --line2:#363E48;
+  --accent:#34C38F; --accent-soft:#163227; --accent-ink:#0B1A13;
+  --good:#34C38F; --good-soft:#163227; --bad:#F26D6D; --bad-soft:#3A1E1E; --warn:#E3B04B; --warn-soft:#3A2F17;
+  --chip:#232930; --chip-on:#F2F4F6; --chip-on-ink:#0E1114; --input:#1D2227;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:17px;line-height:1.45;font-weight:500;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+a{color:inherit}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+input,select{font:inherit;color:var(--ink)}
+.app{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 calc(92px + env(safe-area-inset-bottom,0px));min-height:100%}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:16px 10px}
+.brand{display:flex;flex-direction:column;min-width:0}
+.wordmark{font-weight:800;font-size:20px;letter-spacing:-.02em;line-height:1.1}
+.wordmark em{font-style:normal;color:var(--accent)}
+.co{font-size:13px;color:var(--ink3);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;gap:6px;align-items:center}
+.icon-btn{width:40px;height:40px;border-radius:50%;background:var(--card);box-shadow:var(--shadow);display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:var(--ink2)}
+main{padding-block:6px 0}
+section.view{display:flex;flex-direction:column;gap:20px}
+h1{font-weight:800;font-size:34px;line-height:1.08;margin:0;letter-spacing:-.03em;text-wrap:balance}
+h1.serif{font-family:var(--serif);font-weight:400;font-size:44px;letter-spacing:-.01em}
+h2{font-weight:800;font-size:22px;line-height:1.15;margin:0;letter-spacing:-.02em;text-wrap:balance}
+h3{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin:0}
+p{margin:0}
+.lede{font-size:18px;color:var(--ink2);max-width:32em}
+.muted{color:var(--ink3)}.dim{color:var(--ink2)}
+.small{font-size:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 20px;border-radius:14px;font-weight:700;font-size:16px;text-decoration:none;min-height:52px;background:var(--chip);color:var(--ink)}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.dark{background:var(--chip-on);color:var(--chip-on-ink)}
+.btn.sm{min-height:40px;padding:0 14px;font-size:14px;border-radius:12px}
+.btn.wide{width:100%}
+.btn:disabled{opacity:.4;cursor:default}
+.card{background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:20px}
+.pos{color:var(--good)}.neg{color:var(--bad)}
+
+/* Bottom tabs */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--card);border-top:1px solid var(--line);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs .in{max-width:560px;margin:0 auto;display:flex}
+nav.tabs a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 8px;text-decoration:none;font-size:12px;font-weight:700;color:var(--ink3)}
+nav.tabs a svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+nav.tabs a.on{color:var(--ink)}
+
+/* Welcome */
+.hero{display:flex;flex-direction:column;gap:20px;padding-block:22px 10px}
+.cta{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:380px){.cta{grid-template-columns:1fr}}
+.essentials .chip.on .dot{outline:2px solid var(--chip-on-ink)}
+.how{display:grid;grid-template-columns:1fr;gap:10px}
+.how > div{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start;background:var(--card);border-radius:18px;padding:16px;box-shadow:var(--shadow)}
+.how .n{width:44px;height:44px;border-radius:14px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+.how b{display:block;font-weight:800;font-size:17px}
+.how span{color:var(--ink2);font-size:15px}
+.glossary{display:grid;gap:0;background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.glossary > div{display:grid;grid-template-columns:120px 1fr;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);font-size:15px}
+.glossary > div:last-child{border-bottom:0}
+.glossary b{font-weight:800}
+.glossary span{color:var(--ink2)}
+@media (max-width:420px){.glossary > div{grid-template-columns:1fr;gap:2px}}
+
+/* Setup (one question per screen) */
+.setup{display:flex;flex-direction:column;gap:22px;padding-block:8px}
+.progress{height:6px;background:var(--chip);border-radius:3px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .25s}
+.q{display:flex;flex-direction:column;gap:8px}
+.q h1{font-size:30px}
+.q .hint{color:var(--ink2);font-size:16px}
+.bigin{display:flex;align-items:center;gap:6px;background:var(--card);border-radius:20px;padding:10px 20px;box-shadow:var(--shadow);border:2px solid transparent}
+.bigin:focus-within{border-color:var(--accent)}
+.bigin span{font-size:34px;font-weight:800;color:var(--ink3)}
+.bigin input{flex:1;min-width:0;border:0;background:transparent;font-size:40px;font-weight:800;letter-spacing:-.02em;padding:6px 0}
+.bigin input::placeholder{color:var(--line2);font-weight:800}
+.bigin.text input{font-size:28px}
+.setup .row{justify-content:space-between}
+
+/* Hero (home) */
+.hero-card{background:var(--card);border-radius:24px;box-shadow:var(--shadow);padding:22px 22px 18px;display:flex;flex-direction:column;gap:14px}
+.hero-card .label{font-size:14px;font-weight:700;color:var(--ink3)}
+.hero-card .big{font-size:48px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.hero-card .sub{display:flex;gap:8px;flex-wrap:wrap}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:14px;font-weight:700;background:var(--chip);color:var(--ink2)}
+.tag.good{background:var(--good-soft);color:var(--good)}
+.tag.bad{background:var(--bad-soft);color:var(--bad)}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding-top:4px}
+.mini button{text-align:left;background:var(--bg);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.mini .v{font-size:19px;font-weight:800;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini .k{font-size:13px;color:var(--ink3);font-weight:600}
+
+/* Entry */
+.entry{display:flex;flex-direction:column;gap:12px}
+.seg{display:flex;background:var(--chip);border-radius:14px;padding:4px;gap:4px}
+.seg button{flex:1;min-height:40px;border-radius:11px;font-weight:800;font-size:15px;color:var(--ink3)}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.seg button.on.earn{color:var(--good)}
+.entry.earn input{border-color:var(--good)}
+.entry.earn .btn.primary{background:var(--good)}
+.entry form{display:flex;gap:8px}
+.entry input{flex:1;min-width:0;border:2px solid transparent;background:var(--input);border-radius:16px;padding:0 18px;font-size:18px;font-weight:600;min-height:56px;box-shadow:var(--shadow)}
+.entry input:focus{border-color:var(--accent);outline:none}
+.entry input::placeholder{color:var(--ink3);font-weight:500}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:0 14px 0 8px;border-radius:999px;background:var(--card);box-shadow:var(--shadow);font-size:15px;font-weight:700;display:inline-flex;gap:8px;align-items:center;min-height:42px}
+.chip .dot{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;color:#fff}
+.chip.on{background:var(--chip-on);color:var(--chip-on-ink)}
+.ghost{color:var(--ink2);font-weight:700;font-size:15px;padding:8px 2px}
+.help{background:var(--accent-soft);color:var(--accent);border-radius:16px;padding:14px 16px;font-size:15px;font-weight:600;display:flex;gap:10px;align-items:flex-start}
+
+/* Ledger */
+.ledger{display:flex;flex-direction:column;gap:14px}
+.day{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px}
+.day h3{color:var(--ink2)}
+.day span{font-size:14px;font-weight:700;color:var(--ink3)}
+.txns{background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.txn{display:grid;grid-template-columns:40px 1fr auto auto;gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+.txn:last-child{border-bottom:0}
+.dot{width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex:none}
+.txn .desc{min-width:0;display:flex;flex-direction:column;text-align:left}
+.txn.transfer .amt{color:var(--ink3);text-decoration:line-through;text-decoration-thickness:1px}
+.txn .desc b{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.txn .desc span{font-size:13px;color:var(--ink3);font-weight:600}
+.txn .amt{font-weight:800;font-size:17px;white-space:nowrap}
+.txn .del{width:32px;height:32px;border-radius:50%;color:var(--ink3);font-size:18px;display:inline-flex;align-items:center;justify-content:center}
+.txn .del:hover{background:var(--bad-soft);color:var(--bad)}
+.empty{padding:28px 16px;text-align:center;color:var(--ink3);background:var(--card);border-radius:18px;box-shadow:var(--shadow);font-weight:600}
+
+/* Statements */
+.period-nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.period-nav b{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.period-nav button{width:44px;height:44px;border-radius:50%;background:var(--card);box-shadow:var(--shadow);font-size:20px;color:var(--ink2);display:inline-flex;align-items:center;justify-content:center}
+.stmt{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:20px 18px 12px;display:flex;flex-direction:column}
+.stmt header{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;padding-bottom:12px}
+.stmt header span{font-size:13px;color:var(--ink3);font-weight:700}
+.line{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line);width:100%;text-align:left;font-size:17px;font-weight:600}
+.line .lbl{display:flex;align-items:center;gap:8px;min-width:0}
+.line .q{font-size:12px;font-weight:800;color:var(--ink3);background:var(--chip);border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+button.line:hover .q{background:var(--accent-soft);color:var(--accent)}
+.line.sub{padding:7px 0 7px 16px;border-top:0;font-size:15px;color:var(--ink3);font-weight:600}
+.line.sub + .line.sub{padding-top:0}
+.line.total{border-top:2px solid var(--ink);font-weight:800;font-size:19px}
+.line.subtotal{border-top:1px solid var(--ink);font-weight:800}
+.line.group{padding:14px 0 4px;border-top:0;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.line.kpi{border-top:1px dashed var(--line2)}
+.amt{font-weight:700;white-space:nowrap}
+.note{font-size:13px;color:var(--ink3);font-weight:600;padding:10px 0 4px;line-height:1.4}
+
+/* Earnings */
+.call{background:var(--card);border-radius:24px;box-shadow:var(--shadow);padding:22px;display:flex;flex-direction:column;gap:18px}
+.call .head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metric{display:flex;flex-direction:column;gap:2px;padding:14px;background:var(--bg);border-radius:16px}
+.metric .v{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.metric .k{font-size:13px;color:var(--ink3);font-weight:700}
+.metric .d{font-size:13px;font-weight:700}
+.commentary{font-family:var(--serif);font-size:22px;line-height:1.3;color:var(--ink)}
+.bars{display:flex;flex-direction:column;gap:12px}
+.bar{display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:center}
+.bar .dot{width:36px;height:36px;font-size:16px}
+.bar .bh{display:flex;justify-content:space-between;gap:10px;font-size:15px;font-weight:700;margin-bottom:5px}
+.bar .bh span:first-child{min-width:0}
+.bar > div{min-width:0}
+.bar .bh span:last-child{color:var(--ink3);white-space:nowrap}
+.bar .track{height:10px;background:var(--chip);border-radius:5px;overflow:hidden}
+.bar .fill{height:100%;border-radius:5px}
+.actions{display:flex;flex-direction:column;gap:10px}
+.action{display:grid;grid-template-columns:36px 1fr;gap:12px;padding:16px;background:var(--card);border-radius:18px;box-shadow:var(--shadow)}
+.action .n{width:36px;height:36px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800}
+.action .t{font-weight:800;font-size:17px}
+.action .e{font-size:15px;color:var(--ink2);margin-top:3px}
+
+/* Sheet */
+.scrim{position:fixed;inset:0;background:rgba(10,12,16,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:560px;background:var(--card);border-radius:24px 24px 0 0;padding:22px 0 0;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px;max-height:88vh;overflow:auto;position:relative}
+.sheet::before{content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);width:40px;height:5px;border-radius:3px;background:var(--line2)}
+.sheet h2{font-size:24px}
+.def{display:flex;flex-direction:column;gap:12px}
+.def .big{font-size:40px;font-weight:800;letter-spacing:-.03em}
+.def .formula{font-size:14px;font-weight:700;color:var(--ink2);background:var(--bg);padding:12px 14px;border-radius:12px;overflow-x:auto;white-space:nowrap}
+.def p{font-size:17px;color:var(--ink2)}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-weight:700;font-size:15px}
+.field input,.field select{width:100%;border:2px solid var(--line);background:var(--input);border-radius:14px;padding:0 16px;min-height:52px;font-size:17px;font-weight:600}
+.field input:focus{border-color:var(--accent);outline:none}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--chip-on);color:var(--chip-on-ink);padding:8px 8px 8px 18px;border-radius:999px;font-size:15px;font-weight:700;z-index:30;box-shadow:var(--shadow);max-width:calc(100vw - 32px);display:flex;align-items:center;gap:12px}
+.toast span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.toast button{flex:none;background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:6px 14px;font-weight:800;font-size:14px}
+.toast:not(:has(button)){padding-right:18px}
+.demo-flag{font-size:11px;font-weight:800;color:var(--warn);background:var(--warn-soft);border-radius:6px;padding:2px 7px;letter-spacing:.04em}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s cubic-bezier(.2,.8,.2,1)}.toast{animation:fade .2s ease-out}.view{animation:fade .18s ease-out}}
+@keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+</style>
+</head>
+<body>
+
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="wordmark">Be<em>Company</em></div>
+      <div class="co" id="coName"></div>
+    </div>
+    <button class="icon-btn" id="menuBtn" aria-label="Menu">⋯</button>
+  </header>
+  <main id="main"></main>
+</div>
+<nav class="tabs" id="tabs" hidden><div class="in">
+  <a href="#log" data-view="log"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Log</a>
+  <a href="#statements" data-view="statements"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 9h8M8 13h8M8 17h5"/></svg>Statements</a>
+  <a href="#earnings" data-view="earnings"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-8M16 7h4v4"/></svg>Earnings</a>
+</div></nav>
+<div id="overlay"></div>
+
+<script>
+(function(){
+'use strict';
+const KEY='becompany.v1';
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const R=Math.round;
+
+/* ---------- categories ---------- */
+const CATS={
+  income:{label:'Income',line:'revenue',icon:'💵',words:['salary','paycheck','pay ','paid','income','wage','allowance','stipend','refund','tips','bonus','freelance','venmo from','ta pay','ra pay']},
+  food:{label:'Food',line:'variable',icon:'🍔',words:['lunch','dinner','breakfast','brunch','chipotle','grocery','groceries','trader joe','whole foods','mcdonald','doordash','uber eats','ubereats','pizza','sushi','ramen','food','snack','h mart','hmart','star market','shake shack','cava','sweetgreen','pho','bbq','kbbq','restaurant','takeout','delivery','burger','taco']},
+  coffee:{label:'Coffee',line:'variable',icon:'☕',words:['coffee','starbucks','sbux','latte','cafe','dunkin','tatte','blue bottle','boba','bubble tea','matcha','pavement']},
+  transit:{label:'Transit',line:'variable',icon:'🚕',words:['uber','lyft','mbta','charlie','train','bus','gas','parking','subway','taxi','flight','amtrak','bluebike','scooter']},
+  shopping:{label:'Shopping',line:'variable',icon:'🛍️',words:['amazon','target','clothes','nike','uniqlo','shoes','zara','shopping','haircut','cvs','walgreens','gift','books','supplies']},
+  fun:{label:'Fun',line:'variable',icon:'🎉',words:['bar','drinks','beer','movie','concert','game','party','date','trip','hotel','airbnb','golf','bowling','karaoke','club','ticket']},
+  health:{label:'Health',line:'variable',icon:'💊',words:['pharmacy','doctor','dentist','medicine','vitamins','copay','therapy','glasses']},
+  subs:{label:'Subscriptions',line:'fixed',icon:'🔁',words:['netflix','spotify','gym','icloud','chatgpt','claude','youtube','hulu','disney','prime','subscription','insurance','adobe','notion','crunchyroll']},
+  rent:{label:'Rent',line:'fixed',icon:'🏠',words:['rent','lease','housing','dorm']},
+  utilities:{label:'Utilities',line:'fixed',icon:'💡',words:['electric','electricity','gas bill','water bill','internet','wifi','phone bill','verizon','t-mobile','tmobile','at&t','xfinity','utilities']},
+  capex:{label:'Big purchase',line:'capex',icon:'💻',words:['laptop','macbook','iphone','ipad','monitor','desk','bike','furniture','camera','tv','airpods','mattress','suit','console','ps5','switch']},
+  invest:{label:'Investing',line:'invest',icon:'📈',words:['stock','stocks','etf','robinhood','fidelity','schwab','401k','roth','ira','bitcoin','invest','crypto','index fund','vanguard']},
+  transfer:{label:'Card payment',line:'transfer',icon:'💳',words:['credit card payment','card payment','paid card','card bill','pay card','credit card bill','amex payment','chase payment','pay off card','transfer']},
+  repay:{label:'Loan payment',line:'repay',icon:'🏦',words:['student loan','loan payment','repay','repayment','pay off loan']},
+  borrow:{label:'Borrowed',line:'borrow',icon:'🤝',words:['loan','borrow','borrowed','credit line']},
+};
+const CHIP_ORDER=['food','coffee','transit','shopping','fun','subs','health','capex','invest','transfer','repay','rent','utilities','borrow','income'];
+const VAR_CATS=Object.keys(CATS).filter(k=>CATS[k].line==='variable');
+const DEFAULT_ESS=['food','transit','health'];
+const SPEND_LINES=['variable','fixed','capex'];
+const dot=k=>`<span class="dot" style="background:var(--c-${k})">${CATS[k].icon}</span>`;
+
+/* ---------- state ---------- */
+let state=load();
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.v===1){if(!s.essential)s.essential=DEFAULT_ESS.slice();return s;}}catch(e){}return fresh();}
+function fresh(){return {v:1,profile:null,recurring:[],txns:[],learned:{},usage:{},demo:false,seenHelp:false,essential:DEFAULT_ESS.slice()};}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+const uid=()=>Math.random().toString(36).slice(2,9);
+
+/* ---------- dates ---------- */
+const pad=n=>String(n).padStart(2,'0');
+const isoOf=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const todayISO=()=>isoOf(new Date());
+const yesterdayISO=()=>{const d=new Date();d.setDate(d.getDate()-1);return isoOf(d);};
+const mkOf=iso=>iso.slice(0,7);
+const curMK=()=>mkOf(todayISO());
+function mkAdd(mk,n){const [y,m]=mk.split('-').map(Number);const d=new Date(y,m-1+n,1);return d.getFullYear()+'-'+pad(d.getMonth()+1);}
+function mkDiff(a,b){const [ay,am]=a.split('-').map(Number),[by,bm]=b.split('-').map(Number);return (by-ay)*12+(bm-am);}
+function daysIn(mk){const [y,m]=mk.split('-').map(Number);return new Date(y,m,0).getDate();}
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function mkName(mk){const [y,m]=mk.split('-').map(Number);return MONTHS[m-1]+' '+y;}
+function mkShort(mk){const [y,m]=mk.split('-').map(Number);return MONTHS[m-1].slice(0,3);}
+function dayName(iso){if(iso===todayISO())return 'Today';if(iso===yesterdayISO())return 'Yesterday';const d=new Date(iso+'T12:00:00');return d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});}
+
+/* ---------- money ---------- */
+function fmt(n){const neg=n<-0.0001;const a=Math.abs(n);const s=a.toLocaleString('en-US',{maximumFractionDigits:0});return (neg?'−':'')+'$'+s;}
+function fmtc(n){const a=Math.abs(n);return '$'+a.toLocaleString('en-US',{minimumFractionDigits:a%1?2:0,maximumFractionDigits:2});}
+function pct(n){if(!isFinite(n))return '—';return (n*100).toFixed(Math.abs(n)>=.995?0:1)+'%';}
+function cls(n){return n<0?'neg':n>0?'pos':'';}
+const mo=n=>isFinite(n)?n.toFixed(1)+' mo':'—';
+
+/* ---------- parsing ---------- */
+function matchCat(desc){
+  const d=desc.toLowerCase().trim();
+  if(!d)return null;
+  if(state.learned[d])return state.learned[d];
+  let best=null,bestLen=0;
+  for(const [k,c] of Object.entries(CATS)){for(const w of c.words){if(d.includes(w)&&w.length>bestLen){best=k;bestLen=w.length;}}}
+  if(best)return best;
+  for(const [w,k] of Object.entries(state.learned)){if(d.includes(w)&&w.length>bestLen){best=k;bestLen=w.length;}}
+  return best;
+}
+function parse(text){
+  const out=[];const re=/([^\d$+\-]*?)\s*([+\-])?\s*\$?\s*(\d+(?:[.,]\d+)?)\s*(k)?(?=\s|$|,|;)/gi;
+  let m,lastEnd=0;
+  while((m=re.exec(text))){
+    let desc=m[1].replace(/[,;]+/g,' ').trim();
+    let amt=parseFloat(m[3].replace(',',''));if(m[4])amt*=1000;
+    if(!isFinite(amt)||amt<=0)continue;
+    let cat=matchCat(desc);
+    if(m[2]==='+')cat='income';
+    out.push({desc,amount:Math.round(amt*100)/100,cat,forced:m[2]==='+'});
+    lastEnd=re.lastIndex;
+  }
+  const tail=text.slice(lastEnd).replace(/[,;]+/g,' ').trim();
+  if(tail&&out.length&&!out[out.length-1].desc){const e=out[out.length-1];e.desc=tail;if(!e.forced)e.cat=matchCat(tail);}
+  out.forEach(e=>{delete e.forced;if(e.cat==='income'&&!e.desc)e.desc='Income';});
+  return out;
+}
+
+/* ---------- computations ----------
+   Every statement line is rounded to whole dollars first, and every total is built
+   from the rounded lines, so the three statements tie out to the dollar on screen. */
+function recurringFor(mk){return state.recurring.filter(r=>r.from<=mk);}
+function monthTxns(mk){return state.txns.filter(t=>mkOf(t.date)===mk);}
+function depFor(t,mk){const i=mkDiff(mkOf(t.date),mk);const life=t.life||36;if(i<0||i>=life)return 0;return t.amount/life;}
+function computeMonth(mk){
+  const rec=recurringFor(mk);const tx=monthTxns(mk);
+  const fixedItems=[];let rev=0;const varRaw={};let capex=0,invest=0,borrow=0,repay=0,transfers=0;
+  rec.forEach(r=>{if(r.cat==='income')rev+=r.amount;else fixedItems.push({name:r.name,cat:r.cat,amount:R(r.amount)});});
+  tx.forEach(t=>{const c=CATS[t.cat];if(!c)return;
+    if(c.line==='revenue')rev+=t.amount;
+    else if(c.line==='fixed')fixedItems.push({name:t.desc||c.label,cat:t.cat,amount:R(t.amount)});
+    else if(c.line==='variable')varRaw[t.cat]=(varRaw[t.cat]||0)+t.amount;
+    else if(c.line==='capex')capex+=t.amount;
+    else if(c.line==='invest')invest+=t.amount;
+    else if(c.line==='borrow')borrow+=t.amount;
+    else if(c.line==='repay')repay+=t.amount;
+    else if(c.line==='transfer')transfers+=t.amount;
+  });
+  const varByCat={};Object.entries(varRaw).forEach(([k,v])=>varByCat[k]=R(v));
+  const revenue=R(rev);
+  const fixed=fixedItems.reduce((s,i)=>s+i.amount,0);
+  const variable=Object.values(varByCat).reduce((s,v)=>s+v,0);
+  let depRaw=0;state.txns.forEach(t=>{if(t.cat==='capex')depRaw+=depFor(t,mk);});
+  const dep=R(depRaw);
+  capex=R(capex);invest=R(invest);borrow=R(borrow);repay=R(repay);
+  const netIncome=revenue-fixed-variable-dep;
+  const ops=netIncome+dep;               // indirect method: add back the non-cash charge
+  const fcf=ops-capex;                   // what you actually kept after big purchases
+  const investing=-(capex+invest), financing=borrow-repay;
+  return {mk,revenue,fixed,fixedItems,variable,varByCat,dep,netIncome,margin:revenue?netIncome/revenue:NaN,fixedRatio:revenue?fixed/revenue:NaN,
+    ops,fcf,capex,invest,borrow,repay,transfers:R(transfers),investing,financing,netChange:ops+investing+financing,logged:tx.length};
+}
+function essentialOf(m){return (state.essential||DEFAULT_ESS).reduce((s,k)=>s+(m.varByCat[k]||0),0);}
+/* Monthly essential spending used for runway: average of up to three earlier months with entries,
+   else this month's pace once a week is logged, else the day-to-day budget from setup. */
+function essentialBurn(mk){
+  const p=state.profile;const prior=[];
+  for(let i=1;i<=3;i++){const pm=mkAdd(mk,-i);if(pm<p.startMK)break;const cm=computeMonth(pm);if(cm.logged>0)prior.push(essentialOf(cm));}
+  if(prior.length)return {amt:R(prior.reduce((a,b)=>a+b,0)/prior.length),basis:`average of the last ${prior.length===1?'month':prior.length+' months'}`};
+  const cm=computeMonth(mk);const elapsed=mk===curMK()?new Date().getDate():daysIn(mk);
+  if(cm.logged>0&&elapsed>=7)return {amt:R(essentialOf(cm)/elapsed*daysIn(mk)),basis:'this month’s pace'};
+  return {amt:R(p.varBudget||0),basis:'your day-to-day budget from setup'};
+}
+function computeBS(mk){
+  const p=state.profile;let cash=R(p.openingCash),capexSum=0,depSum=0;
+  for(let m=p.startMK;m<=mk;m=mkAdd(m,1)){const cm=computeMonth(m);cash+=cm.netChange;capexSum+=cm.capex;depSum+=cm.dep;}
+  let investments=R(p.investments),debts=R(p.debts);
+  for(let m=p.startMK;m<=mk;m=mkAdd(m,1)){const cm=computeMonth(m);investments+=cm.invest;debts+=cm.borrow-cm.repay;}
+  const equipment=capexSum-depSum;const assets=cash+investments+equipment;
+  const fixedMonthly=computeMonth(mk).fixed;const ess=essentialBurn(mk);const burn=fixedMonthly+ess.amt;
+  return {cash,investments,equipment,assets,debts,netWorth:assets-debts,burn,fixedMonthly,ess,runway:burn>0?Math.max(0,cash)/burn:Infinity};
+}
+function monthsWithData(){const set=new Set([curMK()]);if(state.profile)set.add(state.profile.startMK);state.txns.forEach(t=>set.add(mkOf(t.date)));return [...set].sort();}
+
+/* ---------- routing ---------- */
+let view='welcome';let stmtMK=curMK();let setupStep=0;const setupData={};
+function route(){
+  const h=location.hash.replace('#','');
+  if(!state.profile){view=h==='setup'?'setup':'welcome';}
+  else view=['log','statements','earnings'].includes(h)?h:'log';
+  render();window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',route);
+function go(v){if(location.hash==='#'+v)route();else location.hash=v;}
+
+/* ---------- render ---------- */
+function render(){
+  const tabs=$('#tabs');tabs.hidden=!state.profile;
+  tabs.querySelectorAll('a').forEach(a=>a.classList.toggle('on',a.dataset.view===view));
+  $('#coName').innerHTML=state.profile?esc(state.profile.company)+(state.demo?' <span class="demo-flag">DEMO</span>':''):'';
+  const main=$('#main');
+  if(view==='welcome')main.innerHTML=renderWelcome();
+  else if(view==='setup')main.innerHTML=renderSetup();
+  else if(view==='log')main.innerHTML=renderLog();
+  else if(view==='statements')main.innerHTML=renderStatements();
+  else if(view==='earnings')main.innerHTML=renderEarnings();
+  bind();
+}
+
+function renderWelcome(){
+  return `<section class="view">
+    <div class="hero">
+      <h1 class="serif">Run yourself <em style="color:var(--accent)">like a company.</em></h1>
+      <p class="lede">Type what you spend. BeCompany turns your month into real financial statements and tells you what to fix.</p>
+      <div class="cta">
+        <a class="btn primary" href="#setup">Get started</a>
+        <button class="btn" id="demoBtn">Try the demo</button>
+      </div>
+      <p class="small muted">Takes about a minute. Everything stays on this device. No account, no bank login.</p>
+    </div>
+    <div class="how">
+      <div><div class="n">1</div><div><b>Just type it</b><span>“chipotle 12”, “uber 8”, “paycheck 2,000”. No categories to pick.</span></div></div>
+      <div><div class="n">2</div><div><b>See your statements</b><span>Income statement, balance sheet, cash flow. The same three a public company files.</span></div></div>
+      <div><div class="n">3</div><div><b>Get the earnings call</b><span>Every month: did you beat last month, where the money went, and two things to change.</span></div></div>
+    </div>
+    <div><h3 style="margin:0 0 10px 4px">Words you will pick up</h3>
+    <div class="glossary">
+      <div><b>Net margin</b><span>The share of every dollar you earn that is left after all your costs.</span></div>
+      <div><b>Free cash flow</b><span>The cash you actually kept. It drops in a month you buy something big, even if net income looks fine.</span></div>
+      <div><b>Runway</b><span>How many months your cash covers your bills and essentials if your income stopped.</span></div>
+      <div><b>Depreciation</b><span>A $2,000 laptop is not a $2,000 month. It costs about $56 a month for three years.</span></div>
+    </div></div>
+  </section>`;
+}
+
+const STEPS=[
+  {k:'company',type:'text',q:'Name your company.',hint:'Most people use their own name.',ph:'Alex Kim, Inc.'},
+  {k:'income',q:'How much comes in each month?',hint:'After tax. Salary, stipend, part-time work, allowance. This is your revenue.',ph:'2,400'},
+  {k:'rent',q:'What do you pay for rent?',hint:'Per month. Housing is almost always the biggest fixed cost.',ph:'1,200'},
+  {k:'subs',q:'Other bills that repeat every month?',hint:'Phone, internet, gym, Netflix, insurance. A rough total is fine.',ph:'140'},
+  {k:'var',q:'And everything else in a normal month?',hint:'Food, coffee, rides, going out. This becomes your day-to-day budget.',ph:'600'},
+  {k:'cash',q:'How much cash is in the bank right now?',hint:'Checking plus savings. This is what runway is measured against.',ph:'3,000'},
+  {k:'inv',q:'Any investments?',hint:'Stocks, ETFs, retirement accounts. Enter 0 if none.',ph:'0',opt:true},
+  {k:'debt',q:'Any debt?',hint:'Student loans, or a card balance you carry from month to month. Enter 0 if none.',ph:'0',opt:true},
+];
+function renderSetup(){
+  const s=STEPS[setupStep];const v=setupData[s.k]!=null?setupData[s.k]:'';
+  return `<section class="view"><div class="setup">
+    <div class="progress"><i style="width:${(setupStep)/STEPS.length*100}%"></i></div>
+    <div class="q"><h3>${setupStep+1} of ${STEPS.length}</h3><h1>${s.q}</h1><p class="hint">${s.hint}</p></div>
+    <form id="stepForm" autocomplete="off">
+      <div class="bigin ${s.type==='text'?'text':''}">${s.type==='text'?'':'<span>$</span>'}<input id="stepIn" ${s.type==='text'?'type="text"':'inputmode="decimal"'} placeholder="${s.ph}" value="${esc(v)}" ${s.opt||s.type==='text'?'':'required'}></div>
+    </form>
+    <div class="row"><button class="btn" id="stepBack">${setupStep===0?'Cancel':'Back'}</button><button class="btn primary" id="stepNext">${setupStep===STEPS.length-1?'Open the books':'Next'}</button></div>
+  </div></section>`;
+}
+
+function txnRow(x){
+  const c=CATS[x.cat];const income=c.line==='revenue';const tr=c.line==='transfer';
+  let sub=c.label;
+  if(x.cat==='capex')sub+=` · ${fmt(x.amount/(x.life||36))}/mo for ${x.life||36} months`;
+  if(tr)sub='Card payment · already counted when you spent';
+  return `<div class="txn ${tr?'transfer':''}">${dot(x.cat)}<button class="desc" data-edit="${x.id}"><b>${esc(x.desc||c.label)}</b><span>${sub}</span></button><span class="amt ${income?'pos':''}">${income?'+':''}${fmtc(x.amount)}</span><button class="del" data-del="${x.id}" aria-label="Delete">×</button></div>`;
+}
+function renderLog(){
+  const usage=state.usage;
+  const order=CHIP_ORDER.filter(k=>k!=='income').sort((a,b)=>(usage[b]||0)-(usage[a]||0)).slice(0,9);
+  const chips=order.map(k=>`<button class="chip" data-chip="${k}" type="button">${dot(k)}${CATS[k].label}</button>`).join('');
+  const byDay={};[...state.txns].sort((a,b)=>b.date.localeCompare(a.date)||b.ts-a.ts).forEach(t=>(byDay[t.date]=byDay[t.date]||[]).push(t));
+  const days=Object.keys(byDay).slice(0,10);
+  const yVar=state.txns.filter(x=>x.date===yesterdayISO()&&CATS[x.cat]&&CATS[x.cat].line==='variable');
+  let list='';
+  if(!days.length)list=`<div class="empty">Nothing logged yet.<br><span class="small">Try typing <b>chipotle 12</b> above.</span></div>`;
+  days.forEach(d=>{const rows=byDay[d];const sum=rows.reduce((s,x)=>s+(SPEND_LINES.includes(CATS[x.cat].line)?x.amount:0),0);
+    list+=`<div><div class="day"><h3>${dayName(d)}</h3><span>${fmt(sum)} spent</span></div><div class="txns">${rows.map(txnRow).join('')}</div></div>`;
+  });
+  const m=computeMonth(curMK());const bs=computeBS(curMK());const p=state.profile;
+  const marginTag=isFinite(m.margin)?`<span class="tag ${m.margin>0?'good':'bad'}">${pct(m.margin)} net margin</span>`:'';
+  let budgetTag='';
+  if(p.varBudget){const left=p.varBudget-m.variable;budgetTag=left<0?`<span class="tag bad">${fmt(-left)} over budget</span>`:`<span class="tag">${fmt(left)} left to spend</span>`;}
+  const rec=state.recurring.map(r=>`<div class="txn">${dot(r.cat)}<div class="desc"><b>${esc(r.name)}</b><span>${CATS[r.cat].label} · every month</span></div><span class="amt ${r.cat==='income'?'pos':''}">${r.cat==='income'?'+':''}${fmt(r.amount)}</span><button class="del" data-delrec="${r.id}" aria-label="Remove">×</button></div>`).join('');
+  const help=!state.seenHelp&&!state.txns.length?`<div class="help"><span>👋</span><span>Type what you spent and hit Add. Words like <b>uber</b> or <b>lunch</b> are sorted for you, and you can tap any entry to fix it. Switch to <b>Earned</b> when money comes in.</span></div>`:'';
+  return `<section class="view">
+    <div class="hero-card">
+      <div class="label">Net income · ${mkName(curMK())}</div>
+      <div class="big ${cls(m.netIncome)}">${fmt(m.netIncome)}</div>
+      <div class="sub">${marginTag}${budgetTag}</div>
+      <div class="mini">
+        <button data-term="fcf"><span class="v ${cls(m.fcf)}">${fmt(m.fcf)}</span><span class="k">Free cash flow</span></button>
+        <button data-term="runway"><span class="v">${mo(bs.runway)}</span><span class="k">Runway</span></button>
+        <button data-term="netWorth"><span class="v">${fmt(bs.netWorth)}</span><span class="k">Net worth</span></button>
+      </div>
+    </div>
+    <div class="entry" id="entry">
+      <div class="seg" role="tablist"><button type="button" id="modeSpent" class="on" role="tab">Spent</button><button type="button" id="modeEarned" class="earn" role="tab">Earned</button></div>
+      <form id="logForm" autocomplete="off"><input id="logInput" placeholder="What did you spend?" aria-label="Log an entry" enterkeyhint="done"><button class="btn primary" type="submit">Add</button></form>
+      ${help}
+      <div class="chips" id="chipRow">${chips}</div>
+      <div class="row">${yVar.length?`<button class="ghost" id="sameBtn">↻ Same as yesterday</button>`:''}<button class="ghost" id="recBtn">+ Add a recurring bill</button></div>
+    </div>
+    <div class="ledger">${list}</div>
+    <div><div class="day"><h3>Repeats every month</h3></div><div class="txns">${rec||'<div class="empty">No recurring items.</div>'}</div></div>
+  </section>`;
+}
+
+function renderStatements(){
+  const months=monthsWithData();const i=months.indexOf(stmtMK);
+  const m=computeMonth(stmtMK);const bs=computeBS(stmtMK);
+  const NEUTRAL=['revenue','cash','investments','equipment','debts'];
+  const L=(term,label,amt,c='',raw)=>`<button class="line ${c}" data-term="${term}"><span class="lbl">${label}<span class="q">?</span></span><span class="amt ${NEUTRAL.includes(term)?'':cls(amt)}">${raw!=null?raw:fmt(amt)}</span></button>`;
+  const S=(label,amt)=>`<div class="line sub"><span class="lbl">${esc(label)}</span><span class="amt">${fmt(-amt)}</span></div>`;
+  const G=label=>`<div class="line group">${label}</div>`;
+  const fixedSubs=m.fixedItems.slice().sort((a,b)=>b.amount-a.amount).map(f=>S(f.name,f.amount)).join('');
+  const varSubs=Object.entries(m.varByCat).sort((a,b)=>b[1]-a[1]).map(([k,v])=>S(CATS[k].label,v)).join('');
+  const isCur=stmtMK===curMK();
+  return `<section class="view">
+    <div class="period-nav"><button id="prevMK" ${i<=0?'disabled':''} aria-label="Previous month">‹</button><b>${mkName(stmtMK)}</b><button id="nextMK" ${i>=months.length-1?'disabled':''} aria-label="Next month">›</button></div>
+
+    <div class="stmt"><header><h2>Income statement</h2><span>${isCur?'Month to date':mkName(stmtMK)}</span></header>
+      ${L('revenue','Revenue',m.revenue)}
+      ${L('fixed','Fixed costs',-m.fixed)}${fixedSubs}
+      ${L('variable','Variable costs',-m.variable)}${varSubs}
+      ${L('depreciation','Depreciation',-m.dep)}
+      ${L('netIncome','Net income',m.netIncome,'total')}
+      ${L('margin','Net margin',m.netIncome,'kpi',pct(m.margin))}
+    </div>
+
+    <div class="stmt"><header><h2>Cash flow</h2><span>Where cash actually moved</span></header>
+      ${G('Operating')}
+      ${L('netIncome','Net income',m.netIncome)}
+      ${L('depreciation','Add back depreciation',m.dep)}
+      ${L('ops','Operating cash flow',m.ops,'subtotal')}
+      ${G('Investing')}
+      ${L('capex','Big purchases',-m.capex)}
+      ${L('invest','Moved to investments',-m.invest)}
+      ${G('Financing')}
+      ${L('financing','Loans borrowed minus repaid',m.financing)}
+      ${L('netChange','Net change in cash',m.netChange,'total')}
+      ${L('fcf','Free cash flow',m.fcf,'kpi')}
+      ${m.transfers>0?`<div class="note">${fmt(m.transfers)} in card payments is not counted here. That spending was already counted when you made it.</div>`:''}
+    </div>
+
+    <div class="stmt"><header><h2>Balance sheet</h2><span>End of ${isCur?'today':mkName(stmtMK)}</span></header>
+      ${L('cash','Cash',bs.cash)}
+      ${L('investments','Investments',bs.investments)}
+      ${L('equipment','Equipment',bs.equipment)}
+      <div class="line subtotal"><span class="lbl">Total assets</span><span class="amt">${fmt(bs.assets)}</span></div>
+      ${L('debts','Debt',bs.debts)}
+      ${L('netWorth','Net worth',bs.netWorth,'total')}
+      ${L('runway','Runway',0,'kpi',mo(bs.runway))}
+    </div>
+    <p class="small muted" style="text-align:center">Tap any line to see what it means, using your numbers.</p>
+  </section>`;
+}
+
+function renderEarnings(){
+  const mk=curMK();const m=computeMonth(mk);const prevMK=mkAdd(mk,-1);
+  const hasPrev=prevMK>=state.profile.startMK;
+  const pm=hasPrev?computeMonth(prevMK):null;const bs=computeBS(mk);const p=state.profile;
+  const dMargin=pm&&isFinite(pm.margin)&&isFinite(m.margin)?m.margin-pm.margin:null;
+  const verdict=dMargin==null?{c:'',t:'First report'}:dMargin>0.005?{c:'good',t:'Beat · +'+(dMargin*100).toFixed(1)+'pp margin'}:dMargin<-0.005?{c:'bad',t:'Miss · '+(dMargin*100).toFixed(1)+'pp margin'}:{c:'',t:'In line with last month'};
+  const delta=(a,b)=>{if(b==null)return '';const d=a-b;if(d===0)return `<span class="d muted">Flat vs ${mkShort(prevMK)}</span>`;return `<span class="d ${d>0?'pos':'neg'}">${d>0?'▲':'▼'} ${fmt(Math.abs(d))} vs ${mkShort(prevMK)}</span>`;};
+  const items=[...m.fixedItems.map(f=>({name:f.name,amt:f.amount,cat:f.cat,kind:'fixed'})),...Object.entries(m.varByCat).map(([k,v])=>({name:CATS[k].label,amt:v,cat:k,kind:'var'}))].sort((a,b)=>b.amt-a.amt);
+  const base=m.revenue>0?m.revenue:(m.fixed+m.variable||1);const baseLabel=m.revenue>0?'of income':'of spending';
+  const top=items.slice(0,5);
+  const bars=top.map(x=>`<div class="bar">${dot(x.cat)}<div><div class="bh"><span>${esc(x.name)}</span><span>${fmt(x.amt)} · ${pct(x.amt/base)}</span></div><div class="track"><div class="fill" style="width:${Math.max(3,x.amt/(top[0].amt||1)*100)}%;background:var(--c-${x.cat})"></div></div></div></div>`).join('');
+  const notes=[];
+  if(isFinite(m.fixedRatio)){const fr=m.fixedRatio;
+    let s=fr>.5?`Fixed costs take ${pct(fr)} of what comes in. That is a heavy base, and those bills stay the same if income drops.`:fr>.35?`Fixed costs take ${pct(fr)} of what comes in, a moderate base.`:`Fixed costs take only ${pct(fr)} of what comes in, so most of your spending can flex.`;
+    s+=m.margin>0?` If income fell by ${pct(m.margin)}, the month would only break even.`:` The month is already running at a loss.`;
+    notes.push(s);}
+  if(m.capex>0)notes.push(`Net income is ${fmt(m.netIncome)}, but free cash flow is ${fmt(m.fcf)} because of ${fmt(m.capex)} in big purchases. Depreciation spreads that cost over the coming months; the cash left all at once.`);
+  else if(m.dep>0)notes.push(`${fmt(m.dep)} of this month's costs is depreciation on things you already own. No cash left your account for it.`);
+  if(pm&&pm.variable>0&&m.variable>0){const dv=(m.variable-pm.variable)/pm.variable;const tv=top.find(x=>x.kind==='var');if(Math.abs(dv)>.1)notes.push(`Day-to-day spending is ${dv>0?'up':'down'} ${pct(Math.abs(dv))} from ${mkShort(prevMK)}${dv>0&&tv?`, mostly ${tv.name.toLowerCase()}`:''}.`);}
+  if(p.varBudget&&m.variable>p.varBudget)notes.push(`You are ${fmt(m.variable-p.varBudget)} over your ${fmt(p.varBudget)} budget for day-to-day spending.`);
+  const acts=[];
+  const topVar=items.find(x=>x.kind==='var');
+  if(topVar&&m.revenue){const cut=R(topVar.amt*.2);acts.push({t:`Trim ${topVar.name.toLowerCase()} by 20%`,e:`That is ${fmt(cut)} a month, and it moves your net margin from ${pct(m.margin)} to ${pct((m.netIncome+cut)/m.revenue)}.`});}
+  const subs=m.fixedItems.filter(f=>f.cat==='subs');
+  if(subs.length){const s=subs.reduce((a,b)=>a+b.amount,0);acts.push({t:`Go through your ${fmt(s)} in subscriptions`,e:`Cancelling one saves twelve times its price over a year, and you only have to decide once.`});}
+  if(isFinite(bs.runway)&&bs.runway<3)acts.push({t:`Build runway past 3 months`,e:`Your cash covers ${mo(bs.runway)} of bills and essentials (${fmt(bs.burn)} a month). Companies at this level pause optional spending first.`});
+  if(m.fixedRatio>.5&&m.fixedItems.find(f=>f.cat==='rent'))acts.push({t:`Rent is the real lever`,e:`With ${pct(m.fixedRatio)} of income locked into fixed costs, skipping coffee will not change the picture. A cheaper lease at renewal will.`});
+  if(isFinite(m.margin)&&m.margin>=.2)acts.push({t:`Move the surplus out of checking`,e:`A ${pct(m.margin)} margin is strong. Money that sits in the spending account tends to get spent. Moving it to savings or investments grows your net worth instead.`});
+  if(acts.length<2)acts.push({t:`Keep logging through the month`,e:`The report gets sharper once a full month is on the books and there is a previous month to compare with.`});
+  return `<section class="view">
+    <div class="call">
+      <div class="head"><div><h3>Earnings call</h3><h2 style="margin-top:4px">${mkName(mk)}</h2></div><span class="tag ${verdict.c}">${verdict.t}</span></div>
+      <div class="metrics">
+        <div class="metric"><span class="v">${fmt(m.revenue)}</span><span class="k">Revenue</span>${pm?delta(m.revenue,pm.revenue):''}</div>
+        <div class="metric"><span class="v ${cls(m.netIncome)}">${fmt(m.netIncome)}</span><span class="k">Net income</span>${pm?delta(m.netIncome,pm.netIncome):''}</div>
+        <div class="metric"><span class="v ${cls(m.netIncome)}">${pct(m.margin)}</span><span class="k">Net margin</span>${pm&&isFinite(pm.margin)?`<span class="d muted">${mkShort(prevMK)}: ${pct(pm.margin)}</span>`:''}</div>
+        <div class="metric"><span class="v ${cls(m.fcf)}">${fmt(m.fcf)}</span><span class="k">Free cash flow</span>${pm?delta(m.fcf,pm.fcf):''}</div>
+        <div class="metric"><span class="v">${mo(bs.runway)}</span><span class="k">Runway</span><span class="d muted">${fmt(bs.cash)} in cash</span></div>
+        <div class="metric"><span class="v">${fmt(bs.netWorth)}</span><span class="k">Net worth</span><span class="d muted">assets minus debt</span></div>
+      </div>
+      ${notes.length?`<p class="commentary">${esc(notes[0])}</p>`:''}
+      ${notes.slice(1).map(n=>`<p class="dim">${esc(n)}</p>`).join('')}
+    </div>
+    <div><div class="day"><h3>Where the money went</h3><span>Share ${baseLabel}</span></div><div class="card"><div class="bars">${bars||'<p class="muted">No costs on the books yet.</p>'}</div></div></div>
+    <div><div class="day"><h3>Two things to do</h3></div><div class="actions">${acts.slice(0,2).map((a,i)=>`<div class="action"><span class="n">${i+1}</span><div><div class="t">${esc(a.t)}</div><div class="e">${esc(a.e)}</div></div></div>`).join('')}</div></div>
+  </section>`;
+}
+
+/* ---------- glossary ---------- */
+function term(key){
+  const mk=view==='statements'?stmtMK:curMK();const m=computeMonth(mk);const bs=computeBS(mk);const n=mkShort(mk);
+  const essNames=(state.essential||[]).map(k=>CATS[k].label.toLowerCase()).join(', ')||'none';
+  const T={
+    revenue:{t:'Revenue',big:fmt(m.revenue),f:'everything that came in',d:`All the money that came in during ${n}: paychecks, stipends, allowance. It is the top line, and every other line is taken out of it.`},
+    fixed:{t:'Fixed costs',big:fmt(m.fixed),f:'rent + utilities + subscriptions',d:`Bills that arrive every month whether you do anything or not. Right now they take ${pct(m.fixedRatio)} of your revenue. The higher that share, the less room you have when a month goes badly.`},
+    variable:{t:'Variable costs',big:fmt(m.variable),f:'food + coffee + transit + shopping + fun + health',d:`Spending that moves with your choices. This is the only line you can change this week. It is ${pct(m.revenue?m.variable/m.revenue:NaN)} of your revenue in ${n}.`},
+    depreciation:{t:'Depreciation',big:fmt(m.dep),f:'big purchase ÷ months you will use it',d:`A $2,000 laptop is not a $2,000 month. The cost is spread over the months you use it, so this month carries ${fmt(m.dep)}. It is a real cost but not a cash payment, which is why the cash flow statement adds it back.`},
+    netIncome:{t:'Net income',big:fmt(m.netIncome),f:'revenue − fixed − variable − depreciation',d:`What is left after every cost in ${n}, including the wear on things you own. It is an accounting result, not the cash you kept. For that, look at free cash flow.`},
+    margin:{t:'Net margin',big:pct(m.margin),f:'net income ÷ revenue',d:`Out of every dollar that comes in, this is the share left after all costs. Apple runs about 25 cents. Most people run close to zero without realizing it.`},
+    fcf:{t:'Free cash flow',big:fmt(m.fcf),f:'operating cash flow − big purchases',d:`The cash you actually kept in ${n}. It differs from net income in a month you buy something big: net income spreads the cost out, but the cash leaves all at once. Money you move into investments still counts as kept.`},
+    cash:{t:'Cash',big:fmt(bs.cash),f:'starting cash + every month\'s net change in cash',d:`What is in the bank. It is the one number here that cannot be argued with, and it is what runway is measured against.`},
+    investments:{t:'Investments',big:fmt(bs.investments),f:'starting balance + money you moved in',d:`Counted at what you put in, not today's market price. Moving money here shows up as an investing outflow: cash goes down, investments go up, net worth stays the same.`},
+    equipment:{t:'Equipment',big:fmt(bs.equipment),f:'big purchases − depreciation so far',d:`Your laptop, phone, bike. Each one starts at its price and shrinks a little every month until it reaches zero at the end of its useful life.`},
+    debts:{t:'Debt',big:fmt(bs.debts),f:'starting debt + borrowed − loan payments',d:`Student loans, and any card balance you carry from month to month. Paying a loan down is a financing outflow: cash falls, debt falls, net worth stays the same. A card bill you pay in full is not debt here. That spending was already counted when you made it. Interest is a cost; add it as a recurring bill.`},
+    netWorth:{t:'Net worth',big:fmt(bs.netWorth),f:'total assets − debt',d:`What you would have left if you sold everything and paid everyone back. Every month's net income flows here, which is why the income statement and balance sheet are one system.`},
+    runway:{t:'Runway',big:mo(bs.runway),f:`cash ÷ (fixed costs + essential spending)`,d:`If your income stopped today, this is how many months your cash covers the bills you cannot cancel (${fmt(bs.fixedMonthly)}) plus essentials you still have to buy (${fmt(bs.ess.amt)}, based on ${bs.ess.basis}). Essentials right now: ${essNames}. Change them in the menu. Under three months is tight. Six is comfortable.`},
+    ops:{t:'Operating cash flow',big:fmt(m.ops),f:'net income + depreciation',d:`Cash generated by ordinary life in ${n}. It starts from net income and adds back depreciation, because depreciation is a cost but no cash left for it this month.`},
+    capex:{t:'Big purchases',big:fmt(m.capex),f:'what you paid for equipment this month',d:`A company calls this capital expenditure. The full price leaves your cash now, but only the depreciation hits your income statement. That gap is why free cash flow and net income can point in opposite directions.`},
+    invest:{t:'Moved to investments',big:fmt(m.invest),f:'transfers into stocks, ETFs, retirement',d:`Cash leaves your account but stays yours, so it is not a cost. Your balance sheet just swaps cash for investments.`},
+    financing:{t:'Financing cash flow',big:fmt(m.financing),f:'loans borrowed − loan payments',d:`Cash from or to lenders. Taking a loan is an inflow; paying one down is an outflow. Neither is income or a cost; both change the shape of the balance sheet. Card payments are not here, because the spending behind them was counted when you made it.`},
+    netChange:{t:'Net change in cash',big:fmt(m.netChange),f:'operating + investing + financing',d:`The three sections add up to exactly how much cash moved in ${n}. Add it to last month's cash and you get this month's balance sheet. That tie-out is the whole point of having three statements.`},
+  };
+  const x=T[key];if(!x)return;
+  openSheet(`<div class="def"><h2>${x.t}</h2><div class="big">${x.big}</div><div class="formula">${esc(x.f)}</div><p>${x.d}</p></div>`);
+}
+
+/* ---------- sheet & toast ---------- */
+function openSheet(html,onOpen){
+  const o=$('#overlay');o.innerHTML=`<div class="scrim" id="scrim"><div class="sheet">${html}</div></div>`;
+  $('#scrim').addEventListener('click',e=>{if(e.target.id==='scrim')closeSheet();});
+  if(onOpen)onOpen(o);
+}
+function closeSheet(){$('#overlay').innerHTML='';}
+let toastT;
+function toast(msg,undo){let t=$('.toast');if(t)t.remove();t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${esc(msg)}</span>${undo?'<button type="button">Undo</button>':''}`;document.body.appendChild(t);
+  if(undo)t.querySelector('button').onclick=()=>{undo();t.remove();};
+  clearTimeout(toastT);toastT=setTimeout(()=>t.remove(),undo?4500:1800);}
+
+/* ---------- actions ---------- */
+function addTxn(t){const id=uid();state.txns.push(Object.assign({id,date:todayISO(),ts:Date.now()},t));state.usage[t.cat]=(state.usage[t.cat]||0)+1;state.seenHelp=true;save();return id;}
+function queueEntries(entries){
+  const added=[];
+  const finish=()=>{render();if(!added.length)return;
+    const last=state.txns.find(t=>t.id===added[added.length-1]);
+    const msg=added.length===1?`${CATS[last.cat].icon} ${last.desc||CATS[last.cat].label} · ${CATS[last.cat].label} · ${fmtc(last.amount)}`:`Added ${added.length} entries. Tap one to fix it.`;
+    toast(msg,()=>{state.txns=state.txns.filter(t=>!added.includes(t.id));save();render();});};
+  const next=()=>{
+    const e=entries.shift();if(!e){finish();return;}
+    if(!e.cat){askCat(e,()=>{added.push(addTxn(e));next();});return;}
+    if(e.cat==='capex'&&!e.life){askLife(e,()=>{added.push(addTxn(e));next();});return;}
+    added.push(addTxn(e));next();
+  };next();
+}
+function catChips(attr,sel){return CHIP_ORDER.map(k=>`<button class="chip ${k===sel?'on':''}" data-${attr}="${k}" type="button">${dot(k)}${CATS[k].label}</button>`).join('');}
+function askCat(e,done){
+  openSheet(`<h2>Where does “${esc(e.desc)}” belong?</h2><p class="dim">${fmtc(e.amount)}. You only have to tell me once.</p><div class="chips">${catChips('pick')}</div>`,o=>{
+    o.querySelectorAll('[data-pick]').forEach(b=>b.addEventListener('click',()=>{e.cat=b.dataset.pick;const w=e.desc.toLowerCase().trim();if(w)state.learned[w]=e.cat;closeSheet();
+      if(e.cat==='capex')askLife(e,done);else done();}));
+  });
+}
+const LIFE_OPTS=[[12,'1 year','phone, clothes'],[24,'2 years','bike, console'],[36,'3 years','laptop, furniture'],[60,'5 years','car, appliances']];
+function askLife(e,done){
+  openSheet(`<h2>How long will you use it?</h2><p class="dim">${esc(e.desc||'This purchase')} for ${fmtc(e.amount)}. Instead of one bad month, the cost gets spread out.</p><div class="actions">${LIFE_OPTS.map(([n,l,ex])=>`<button class="action" data-life="${n}" type="button" style="text-align:left"><span class="n">${l.split(' ')[0]}</span><div><div class="t">${l} · ${fmt(e.amount/n)} a month</div><div class="e">${ex}</div></div></button>`).join('')}</div>`,o=>{
+    o.querySelectorAll('[data-life]').forEach(b=>b.addEventListener('click',()=>{e.life=+b.dataset.life;closeSheet();done();}));
+  });
+}
+function editTxn(id){
+  const t=state.txns.find(x=>x.id===id);if(!t)return;let cat=t.cat;
+  openSheet(`<h2>Edit entry</h2>
+    <div class="field"><label for="e_desc">Name</label><input id="e_desc" value="${esc(t.desc||'')}"></div>
+    <div class="field"><label for="e_amt">Amount</label><input id="e_amt" inputmode="decimal" value="${t.amount}"></div>
+    <div class="field"><label>Category</label><div class="chips" id="e_cats">${catChips('ecat',cat)}</div></div>
+    <div class="field" id="e_lifeWrap" ${cat==='capex'?'':'hidden'}><label for="e_life">Spread over</label><select id="e_life">${LIFE_OPTS.map(([n,l])=>`<option value="${n}" ${(t.life||36)===n?'selected':''}>${l}</option>`).join('')}</select></div>
+    <div class="row"><button class="btn primary" id="e_save" style="flex:1">Save</button><button class="btn" id="e_del" style="color:var(--bad)">Delete</button></div>`,o=>{
+    o.querySelectorAll('[data-ecat]').forEach(b=>b.addEventListener('click',()=>{cat=b.dataset.ecat;o.querySelectorAll('[data-ecat]').forEach(x=>x.classList.toggle('on',x===b));$('#e_lifeWrap',o).hidden=cat!=='capex';}));
+    $('#e_save',o).onclick=()=>{const amt=num($('#e_amt',o).value);if(!(amt>0)){$('#e_amt',o).focus();return;}
+      const desc=$('#e_desc',o).value.trim();if(cat!==t.cat&&desc)state.learned[desc.toLowerCase()]=cat;
+      Object.assign(t,{desc,amount:Math.round(amt*100)/100,cat});if(cat==='capex')t.life=+$('#e_life',o).value;else delete t.life;
+      save();closeSheet();render();toast('Saved');};
+    $('#e_del',o).onclick=()=>{state.txns=state.txns.filter(x=>x.id!==id);save();closeSheet();render();};
+  });
+}
+function askRecurring(){
+  openSheet(`<h2>Add a recurring bill</h2><p class="dim">It will count every month from now on.</p>
+    <form id="recForm" style="display:flex;flex-direction:column;gap:14px">
+      <div class="field"><label for="r_name">Name</label><input id="r_name" placeholder="Spotify" required></div>
+      <div class="field"><label for="r_amt">Amount per month</label><input id="r_amt" inputmode="decimal" placeholder="12" required></div>
+      <div class="field"><label for="r_cat">Type</label><select id="r_cat"><option value="subs">Subscription or bill</option><option value="rent">Rent</option><option value="utilities">Utilities</option><option value="income">Income</option></select></div>
+      <button class="btn primary wide" type="submit">Add</button></form>`,o=>{
+    $('#recForm',o).addEventListener('submit',ev=>{ev.preventDefault();const amt=num($('#r_amt',o).value);if(!(amt>0))return;state.recurring.push({id:uid(),name:$('#r_name',o).value.trim(),amount:amt,cat:$('#r_cat',o).value,from:curMK()});save();closeSheet();render();});
+  });
+}
+function menu(){
+  const essChips=VAR_CATS.map(k=>`<button class="chip ${state.essential.includes(k)?'on':''}" data-ess="${k}" type="button">${dot(k)}${CATS[k].label}</button>`).join('');
+  openSheet(`<h2>BeCompany</h2>
+    ${state.profile?`<div class="field"><label>Essentials for runway</label><p class="small dim">Spending you would still have if your income stopped. Runway counts these on top of your fixed bills.</p><div class="chips essentials">${essChips}</div></div>`:''}
+    <div class="row">
+      <button class="btn" id="mDemo">${state.demo?'Reload demo':'Load demo data'}</button>
+      ${state.profile?`<button class="btn" id="mReset" style="color:var(--bad)">Erase everything</button>`:''}
+    </div>
+    <p class="small muted">Your numbers live only on this device. Clearing the browser's site data clears them too. Entries are sorted with simple rules; a word it does not know gets asked once, then remembered.</p>`,o=>{
+    o.querySelectorAll('[data-ess]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.ess;const i=state.essential.indexOf(k);if(i>=0)state.essential.splice(i,1);else state.essential.push(k);b.classList.toggle('on');save();render();}));
+    const r=$('#mReset',o);if(r)r.addEventListener('click',()=>{if(r.dataset.sure){state=fresh();save();closeSheet();stmtMK=curMK();setupStep=0;location.hash='';route();}else{r.dataset.sure='1';r.textContent='Tap again to erase';}});
+    $('#mDemo',o).addEventListener('click',()=>{loadDemo();closeSheet();go('log');});
+  });
+}
+const num=v=>parseFloat(String(v).replace(/[^0-9.]/g,''))||0;
+
+function finishSetup(){
+  const d=setupData;const income=num(d.income),rent=num(d.rent),subs=num(d.subs),varB=num(d.var),cash=num(d.cash),inv=num(d.inv),debt=num(d.debt);
+  const mk=curMK();
+  state=fresh();
+  if(income>0)state.recurring.push({id:uid(),name:'Monthly income',amount:income,cat:'income',from:mk});
+  if(rent>0)state.recurring.push({id:uid(),name:'Rent',amount:rent,cat:'rent',from:mk});
+  if(subs>0)state.recurring.push({id:uid(),name:'Monthly bills',amount:subs,cat:'subs',from:mk});
+  // back out this month's recurring net so the balance sheet shows today's cash right after setup
+  const net=R(income)-R(rent)-R(subs);
+  state.profile={company:(d.company||'').trim()||'You, Inc.',startMK:mk,openingCash:cash-net,investments:inv,debts:debt,varBudget:varB,created:todayISO()};
+  save();
+  const ni=income-rent-subs-varB;const margin=income?ni/income:NaN;const burn=rent+subs+varB;const runway=burn>0?cash/burn:Infinity;
+  openSheet(`<h2>${esc(state.profile.company)} is open for business.</h2><p class="dim">Here is a normal month, using your estimates.</p>
+    <div class="stmt" style="box-shadow:none;background:var(--bg);padding:6px 16px 4px"><div class="line" style="border:0"><span class="lbl">Revenue</span><span class="amt">${fmt(income)}</span></div><div class="line"><span class="lbl">Fixed costs</span><span class="amt neg">${fmt(-(rent+subs))}</span></div><div class="line"><span class="lbl">Day-to-day spending</span><span class="amt neg">${fmt(-varB)}</span></div><div class="line total"><span class="lbl">Net income</span><span class="amt ${cls(ni)}">${fmt(ni)}</span></div><div class="line kpi"><span class="lbl">Net margin</span><span class="amt ${cls(ni)}">${pct(margin)}</span></div><div class="line kpi"><span class="lbl">Runway</span><span class="amt">${mo(runway)}</span></div></div>
+    <p class="dim">${margin>=.2?'A '+pct(margin)+' margin is a healthy company. Now log the real numbers and see if it holds up.':margin>0?'Thin but positive. Logging will show which line is eating the margin.':'Running at a loss on paper. Good to know on day one. Logging will show where it goes.'}</p>
+    <button class="btn primary wide" id="startLog">Start logging</button>`,o=>{$('#startLog',o).addEventListener('click',()=>{closeSheet();go('log');});});
+  go('log');
+}
+
+function loadDemo(){
+  const mk=curMK(),pmk=mkAdd(mk,-1);
+  const dim=daysIn(mk),pdim=daysIn(pmk);const today=new Date().getDate();
+  state=fresh();state.demo=true;state.seenHelp=true;
+  state.recurring=[{id:uid(),name:'Research assistant pay',amount:1400,cat:'income',from:pmk},{id:uid(),name:'Part-time job',amount:900,cat:'income',from:pmk},{id:uid(),name:'Rent',amount:1150,cat:'rent',from:pmk},{id:uid(),name:'Phone + internet',amount:85,cat:'utilities',from:pmk},{id:uid(),name:'Spotify',amount:12,cat:'subs',from:pmk},{id:uid(),name:'Gym',amount:35,cat:'subs',from:pmk},{id:uid(),name:'iCloud',amount:3,cat:'subs',from:pmk}];
+  const cashNow=3900;
+  state.profile={company:'Alex Kim, Inc.',startMK:pmk,openingCash:0,investments:2500,debts:1200,varBudget:650,created:todayISO()};
+  const add=(mon,d,desc,amount,cat,life)=>{state.txns.push({id:uid(),date:mon+'-'+pad(Math.min(d,mon===mk?dim:pdim)),ts:Date.now()+state.txns.length,desc,amount,cat,life});state.usage[cat]=(state.usage[cat]||0)+1;};
+  const P=[[2,'Chipotle',12.5,'food'],[2,'Tatte',6.25,'coffee'],[3,'Trader Joe\'s',48,'food'],[4,'Uber',14,'transit'],[5,'Pavement Coffee',5.5,'coffee'],[6,'Drinks in Allston',32,'fun'],[7,'H Mart',61,'food'],[8,'Starbucks',6.4,'coffee'],[9,'Lunch',11,'food'],[10,'MBTA pass',90,'transit'],[11,'Dinner with friends',38,'food'],[12,'Uniqlo',64,'shopping'],[13,'Coffee',5,'coffee'],[14,'DoorDash',27,'food'],[15,'Movie',16,'fun'],[15,'Card payment',380,'transfer'],[16,'Groceries',55,'food'],[17,'Latte',6,'coffee'],[19,'Lunch',13,'food'],[20,'Uber',18,'transit'],[21,'CVS',22,'shopping'],[22,'Concert',85,'fun'],[23,'Coffee',5.5,'coffee'],[24,'Groceries',52,'food'],[25,'Sushi',29,'food'],[26,'Starbucks',6,'coffee'],[27,'Haircut',30,'shopping'],[28,'Pizza',18,'food'],[28,'Student loan payment',150,'repay']];
+  P.forEach(([d,desc,a,c])=>add(pmk,d,desc,a,c));
+  const C=[[1,'Trader Joe\'s',58,'food'],[1,'Tatte',6.25,'coffee'],[2,'Uber',16,'transit'],[3,'Lunch',12,'food'],[3,'Coffee',5.5,'coffee'],[4,'Drinks',41,'fun'],[5,'MBTA pass',90,'transit'],[6,'DoorDash',31,'food'],[7,'Starbucks',6.4,'coffee'],[8,'MacBook Air',1099,'capex',36],[9,'H Mart',66,'food'],[10,'Latte',6,'coffee'],[11,'Dinner',34,'food'],[12,'Amazon',43,'shopping'],[13,'Coffee',5,'coffee'],[14,'Bar',36,'fun'],[15,'Groceries',49,'food'],[15,'Card payment',410,'transfer'],[16,'Lunch',14,'food'],[17,'Uber',22,'transit'],[18,'Starbucks',6,'coffee'],[19,'DoorDash',28,'food'],[20,'Index fund',200,'invest'],[21,'Pho',15,'food'],[22,'Coffee',5.5,'coffee'],[23,'Groceries',57,'food'],[24,'Karaoke',45,'fun'],[25,'Lunch',12,'food'],[26,'Tatte',6.25,'coffee'],[27,'Student loan payment',150,'repay'],[28,'Chipotle',13,'food']];
+  C.filter(x=>x[0]<=today).forEach(([d,desc,a,c,l])=>add(mk,d,desc,a,c,l));
+  let flow=0;for(let x=pmk;x<=mk;x=mkAdd(x,1))flow+=computeMonth(x).netChange;
+  state.profile.openingCash=cashNow-flow;
+  stmtMK=mk;save();
+}
+
+/* ---------- bind ---------- */
+function bind(){
+  $('#menuBtn').onclick=menu;
+  const d=$('#demoBtn');if(d)d.onclick=()=>{loadDemo();go('log');};
+  const sf=$('#stepForm');if(sf){const inp=$('#stepIn');const s=STEPS[setupStep];
+    const advance=()=>{const v=inp.value.trim();if(!v&&!s.opt&&s.type!=='text'){inp.focus();return;}setupData[s.k]=v;
+      if(setupStep===STEPS.length-1){finishSetup();}else{setupStep++;render();setTimeout(()=>{const n=$('#stepIn');if(n)n.focus();},50);}};
+    sf.addEventListener('submit',e=>{e.preventDefault();advance();});
+    $('#stepNext').onclick=advance;
+    $('#stepBack').onclick=()=>{setupData[s.k]=inp.value.trim();if(setupStep===0){location.hash='';}else{setupStep--;render();}};
+    setTimeout(()=>inp.focus(),50);
+  }
+  const lf=$('#logForm');if(lf){const inp=$('#logInput');let pendingChip=null;let earn=false;
+    const setMode=e=>{earn=e;$('#entry').classList.toggle('earn',earn);$('#modeSpent').classList.toggle('on',!earn);$('#modeEarned').classList.toggle('on',earn);$('#chipRow').hidden=earn;pendingChip=null;document.querySelectorAll('.chip.on').forEach(c=>c.classList.remove('on'));inp.placeholder=earn?'What came in? e.g. paycheck 1200':'What did you spend?';inp.focus();};
+    $('#modeSpent').onclick=()=>setMode(false);$('#modeEarned').onclick=()=>setMode(true);
+    lf.addEventListener('submit',e=>{e.preventDefault();const v=inp.value.trim();if(!v)return;
+      let entries=parse(v);
+      if(earn)entries=entries.map(x=>Object.assign(x,{cat:'income',desc:x.desc||'Income'}));
+      else if(pendingChip){const only=/^\$?\s*\d+(?:[.,]\d+)?k?$/i.test(v);entries=entries.map(x=>Object.assign(x,{cat:only?pendingChip:(x.cat||pendingChip),desc:x.desc||CATS[pendingChip].label}));}
+      if(!entries.length){toast(earn?'Add an amount, like “paycheck 1200”':'Add an amount, like “lunch 12”');return;}
+      inp.value='';pendingChip=null;document.querySelectorAll('.chip.on').forEach(c=>c.classList.remove('on'));queueEntries(entries);});
+    document.querySelectorAll('[data-chip]').forEach(c=>c.addEventListener('click',()=>{const k=c.dataset.chip;const on=c.classList.contains('on');document.querySelectorAll('.chip.on').forEach(x=>x.classList.remove('on'));if(on){pendingChip=null;inp.placeholder='What did you spend?';}else{c.classList.add('on');pendingChip=k;inp.placeholder=`${CATS[k].label}: how much?`;}inp.focus();}));
+    const sb=$('#sameBtn');if(sb)sb.onclick=()=>{const ids=state.txns.filter(x=>x.date===yesterdayISO()&&CATS[x.cat].line==='variable').map(x=>addTxn({desc:x.desc,amount:x.amount,cat:x.cat}));render();toast(`Copied ${ids.length} from yesterday`,()=>{state.txns=state.txns.filter(t=>!ids.includes(t.id));save();render();});};
+    $('#recBtn').onclick=askRecurring;
+    document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const t=state.txns.find(x=>x.id===b.dataset.del);state.txns=state.txns.filter(x=>x.id!==b.dataset.del);save();render();if(t)toast(`Deleted ${t.desc||CATS[t.cat].label}`,()=>{state.txns.push(t);save();render();});});
+    document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editTxn(b.dataset.edit));
+    document.querySelectorAll('[data-delrec]').forEach(b=>b.onclick=()=>{state.recurring=state.recurring.filter(x=>x.id!==b.dataset.delrec);save();render();});
+  }
+  document.querySelectorAll('[data-term]').forEach(b=>b.addEventListener('click',()=>term(b.dataset.term)));
+  const pv=$('#prevMK'),nx=$('#nextMK');const months=monthsWithData();
+  if(pv)pv.onclick=()=>{const i=months.indexOf(stmtMK);if(i>0){stmtMK=months[i-1];render();}};
+  if(nx)nx.onclick=()=>{const i=months.indexOf(stmtMK);if(i<months.length-1){stmtMK=months[i+1];render();}};
+}
+
+if(typeof window!=='undefined')window.__bc={parse,computeMonth,computeBS,loadDemo,curMK,mkAdd,get state(){return state}};
+if(state.profile&&!['#log','#statements','#earnings'].includes(location.hash))history.replaceState(null,'','#log');
+route();
+})();
+
+</script>
+
+</body>
+</html>
